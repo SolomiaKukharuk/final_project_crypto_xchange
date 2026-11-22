@@ -18,9 +18,5 @@ class CryptoExchangeApplication : Application() {
         container
             .cryptoSyncScheduler
             .schedulePeriodicSync()
-        // тимчасово
-        container
-            .cryptoSyncScheduler
-            .scheduleManualSync()
-    }
+            }
 }

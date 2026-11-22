@@ -3,28 +3,31 @@ package com.example.cryptoexchange.data.remote
 import com.google.gson.annotations.SerializedName
 
 data class CryptoTopListResponse(
-    @SerializedName("Data")
-    val data: CryptoTopListData?
-)
-
-data class CryptoTopListData(
-    @SerializedName("LIST")
-    val list: List<CryptoAssetDto>?
+    @SerializedName("data")
+    val data: List<CryptoAssetDto>?
 )
 
 data class CryptoAssetDto(
-    @SerializedName("ID")
+    @SerializedName("id")
     val id: Long?,
 
-    @SerializedName("NAME")
+    @SerializedName("name")
     val name: String?,
 
-    @SerializedName("SYMBOL")
+    @SerializedName("symbol")
     val symbol: String?,
 
-    @SerializedName("LOGO_URL")
-    val logoUrl: String?,
+    @SerializedName("cmc_rank")
+    val rank: Int?,
 
-    @SerializedName("PRICE_USD")
-    val priceUsd: Double?
+    @SerializedName("quote")
+    val quote: List<CryptoQuoteDto>?
+)
+
+data class CryptoQuoteDto(
+    @SerializedName("symbol")
+    val symbol: String?,
+
+    @SerializedName("price")
+    val price: Double?
 )

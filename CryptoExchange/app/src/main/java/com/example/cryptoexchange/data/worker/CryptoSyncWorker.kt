@@ -20,21 +20,15 @@ class CryptoSyncWorker(
     }
 
     override suspend fun doWork(): Result {
-
         return try {
-
             Log.d(TAG, "Worker started")
 
             val application =
                 applicationContext as? CryptoExchangeApplication
-                    ?: return failure(
-                        "Неправильний Application class"
-                    )
+                    ?: return failure("Неправильний Application class")
 
             val syncUseCase =
-                application
-                    .container
-                    .syncCryptocurrenciesUseCase
+                application.container.syncCryptocurrenciesUseCase
 
             syncUseCase()
 
@@ -50,17 +44,11 @@ class CryptoSyncWorker(
             )
 
         } catch (e: CancellationException) {
-
             Log.d(TAG, "Worker cancelled")
             throw e
 
         } catch (e: CryptoSyncException.Temporary) {
-
-            Log.e(
-                TAG,
-                "Temporary error",
-                e
-            )
+            Log.e(TAG, "Temporary error", e)
 
             if (runAttemptCount < 3) {
                 Result.retry()
@@ -71,26 +59,8 @@ class CryptoSyncWorker(
                 )
             }
 
-        } catch (e: CryptoSyncException.Authentication) {
-
-            Log.e(
-                TAG,
-                "Authentication error",
-                e
-            )
-
-            failure(
-                e.message
-                    ?: "Помилка API key"
-            )
-
         } catch (e: CryptoSyncException.RateLimit) {
-
-            Log.e(
-                TAG,
-                "Rate limit error",
-                e
-            )
+            Log.e(TAG, "Rate limit error", e)
 
             failure(
                 e.message
@@ -98,12 +68,7 @@ class CryptoSyncWorker(
             )
 
         } catch (e: CryptoSyncException.InvalidResponse) {
-
-            Log.e(
-                TAG,
-                "Invalid API response",
-                e
-            )
+            Log.e(TAG, "Invalid API response", e)
 
             failure(
                 e.message
@@ -111,12 +76,7 @@ class CryptoSyncWorker(
             )
 
         } catch (e: Exception) {
-
-            Log.e(
-                TAG,
-                "Unexpected error",
-                e
-            )
+            Log.e(TAG, "Unexpected error", e)
 
             failure(
                 e.message
@@ -125,14 +85,8 @@ class CryptoSyncWorker(
         }
     }
 
-    private fun failure(
-        message: String
-    ): Result {
-
-        Log.e(
-            TAG,
-            "Worker failed: $message"
-        )
+    private fun failure(message: String): Result {
+        Log.e(TAG, "Worker failed: $message")
 
         return Result.failure(
             Data.Builder()

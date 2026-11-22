@@ -1,17 +1,3 @@
-import java.util.Properties
-
-val localProperties = Properties().apply {
-    val file = rootProject.file("local.properties")
-    if (file.exists()) {
-        file.inputStream().use { load(it) }
-    }
-}
-
-val coinDeskApiKey =
-    localProperties.getProperty(
-        "COINDESK_API_KEY",
-        ""
-    )
 
 plugins {
     alias(libs.plugins.android.application)
@@ -23,16 +9,9 @@ plugins {
 android {
     namespace = "com.example.cryptoexchange"
     compileSdk {
-        version = release(37)
-    }
+        version = release(37)}
 
     defaultConfig {
-        buildConfigField(
-            "String",
-            "COINDESK_API_KEY",
-            "\"$coinDeskApiKey\""
-        )
-
         applicationId = "com.example.cryptoexchange"
         minSdk = 24
         targetSdk = 37
@@ -55,7 +34,6 @@ android {
     }
     buildFeatures {
         compose = true
-        buildConfig = true
     }
 }
 

@@ -11,57 +11,27 @@ import java.io.IOException
 
 class CryptoRepositoryImpl(
     private val api: CryptoApi,
-    private val dao: CryptoDao,
-    private val apiKey: String
+    private val dao: CryptoDao
 ) : CryptoRepository {
 
-    override fun observeCryptocurrencies():
-            Flow<List<CryptoCurrency>> {
-
-        return dao
-            .observeCryptocurrencies()
-            .map { entities ->
-                entities.map { entity ->
-                    entity.toDomain()
-                }
+    override fun observeCryptocurrencies(): Flow<List<CryptoCurrency>> =
+        dao.observeCryptocurrencies().map { entities ->
+            entities.map { entity ->
+                entity.toDomain()
             }
-    }
-
-    override suspend fun syncCryptocurrencies() {
-
-        if (apiKey.isBlank()) {
-            throw CryptoSyncException.Authentication()
         }
 
-        val response =
-            try {
-                api.getTopCryptocurrencies(
-                    authorization = "Apikey $apiKey"
-                )
-            } catch (e: IOException) {
-
-                throw CryptoSyncException.Temporary(
-                    "Немає з'єднання з мережею"
-                )
-            }
+    override suspend fun syncCryptocurrencies() {
+        val response = try {
+            api.getTopCryptocurrencies()
+        } catch (e: IOException) {
+            throw CryptoSyncException.Temporary(
+                "Немає з'єднання з мережею"
+            )
+        }
 
         when (response.code()) {
-
-            401 -> {
-                throw CryptoSyncException.Authentication(
-                    "401: API key відсутній або невалідний"
-                )
-            }
-
-            403 -> {
-                throw CryptoSyncException.Authentication(
-                    "403: API key прийнятий, але немає доступу до цього endpoint"
-                )
-            }
-
-            429 -> {
-                throw CryptoSyncException.RateLimit()
-            }
+            429 -> throw CryptoSyncException.RateLimit()
         }
 
         if (response.code() in 500..599) {
@@ -76,13 +46,10 @@ class CryptoRepositoryImpl(
             )
         }
 
-        val dtoList =
-            response.body()
-                ?.data
-                ?.list
-                ?: throw CryptoSyncException.InvalidResponse(
-                    "API не повернув список криптовалют"
-                )
+        val dtoList = response.body()?.data
+            ?: throw CryptoSyncException.InvalidResponse(
+                "API не повернув список криптовалют"
+            )
 
         if (dtoList.size < 30) {
             throw CryptoSyncException.InvalidResponse(
@@ -90,28 +57,20 @@ class CryptoRepositoryImpl(
             )
         }
 
-        val top30 =
-            dtoList.take(30)
+        val updatedAt = System.currentTimeMillis()
 
-        val updatedAt =
-            System.currentTimeMillis()
-
-        val entities =
-            top30.mapIndexed { index, dto ->
-
-                dto.toEntity(
-                    rank = index + 1,
-                    updatedAt = updatedAt
-                )
+        val entities = dtoList
+            .take(30)
+            .map { dto ->
+                dto.toEntity(updatedAt)
                     ?: throw CryptoSyncException.InvalidResponse(
                         "У відповіді відсутні обов'язкові дані"
                     )
             }
 
-        val uniqueIds =
-            entities
-                .map { it.id }
-                .toSet()
+        val uniqueIds = entities
+            .map { it.id }
+            .toSet()
 
         if (uniqueIds.size != 30) {
             throw CryptoSyncException.InvalidResponse(

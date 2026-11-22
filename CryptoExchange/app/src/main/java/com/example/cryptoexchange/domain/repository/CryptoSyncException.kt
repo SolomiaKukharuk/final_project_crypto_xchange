@@ -4,10 +4,6 @@ sealed class CryptoSyncException(
     message: String
 ) : Exception(message) {
 
-    class Authentication(
-        message: String = "Невірний API key або немає доступу до API"
-    ) : CryptoSyncException(message)
-
     class RateLimit :
         CryptoSyncException(
             "Перевищено ліміт запитів API"
