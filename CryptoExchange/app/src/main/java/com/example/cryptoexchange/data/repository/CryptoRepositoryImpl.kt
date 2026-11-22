@@ -47,8 +47,16 @@ class CryptoRepositoryImpl(
 
         when (response.code()) {
 
-            401, 403 -> {
-                throw CryptoSyncException.Authentication()
+            401 -> {
+                throw CryptoSyncException.Authentication(
+                    "401: API key відсутній або невалідний"
+                )
+            }
+
+            403 -> {
+                throw CryptoSyncException.Authentication(
+                    "403: API key прийнятий, але немає доступу до цього endpoint"
+                )
             }
 
             429 -> {

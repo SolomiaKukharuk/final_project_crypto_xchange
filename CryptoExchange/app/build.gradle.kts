@@ -64,6 +64,13 @@ configurations.all {
     resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.21")
     resolutionStrategy.force("org.jetbrains.kotlin:kotlin-reflect:2.0.21")
 }
+kotlin {
+    compilerOptions {
+        languageVersion.set(
+            org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_1
+        )
+    }
+}
 
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
