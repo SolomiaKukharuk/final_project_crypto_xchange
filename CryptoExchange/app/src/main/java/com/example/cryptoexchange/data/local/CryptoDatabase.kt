@@ -1,10 +1,9 @@
 package com.example.cryptoexchange.data.local
 
 import android.content.Context
-import androidx.room3.Database
-import androidx.room3.Room
-import androidx.room3.RoomDatabase
-import androidx.sqlite.driver.AndroidSQLiteDriver
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
 
 @Database(
     entities = [CryptoEntity::class],
@@ -31,9 +30,6 @@ abstract class CryptoDatabase : RoomDatabase() {
                     CryptoDatabase::class.java,
                     "crypto_database"
                 )
-                    .setDriver(
-                        AndroidSQLiteDriver()
-                    )
                     .build()
                     .also {
                         INSTANCE = it

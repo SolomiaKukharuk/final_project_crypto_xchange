@@ -1,31 +1,32 @@
 package com.example.cryptoexchange.data.local
 
-import androidx.room3.Dao
-import androidx.room3.Query
-import androidx.room3.Transaction
-import androidx.room3.Upsert
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface CryptoDao {
+abstract class CryptoDao {
 
     @Query(
         "SELECT * FROM cryptocurrencies " +
                 "ORDER BY rank ASC"
     )
-    fun observeCryptocurrencies():
+    abstract fun observeCryptocurrencies():
             Flow<List<CryptoEntity>>
 
-    @Upsert
-    suspend fun upsertAll(
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract fun upsertAll(
         currencies: List<CryptoEntity>
-    )
+    ): List<Long>
 
     @Query("DELETE FROM cryptocurrencies")
-    suspend fun deleteAll()
+    abstract fun deleteAll(): Int
 
     @Transaction
-    suspend fun replaceAll(
+    open fun replaceAll(
         currencies: List<CryptoEntity>
     ) {
         deleteAll()
