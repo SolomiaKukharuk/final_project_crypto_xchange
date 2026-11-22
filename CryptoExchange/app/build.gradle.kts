@@ -59,6 +59,12 @@ android {
     }
 }
 
+configurations.all {
+    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib:2.0.21")
+    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.21")
+    resolutionStrategy.force("org.jetbrains.kotlin:kotlin-reflect:2.0.21")
+}
+
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
@@ -75,14 +81,15 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
-    val roomVersion = "3.0.3"
     val coilVersion = "3.6.3"
 
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 
-    implementation("androidx.room3:room3-runtime:$roomVersion")
-    ksp("androidx.room3:room3-compiler:$roomVersion")
+    val roomVersion = "2.8.5"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
 
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
