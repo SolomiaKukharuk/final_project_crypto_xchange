@@ -1,7 +1,7 @@
 package com.example.cryptoexchange.data.local
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room3.Entity
+import androidx.room3.PrimaryKey
 
 @Entity(tableName = "cryptocurrencies")
 data class CryptoEntity(
