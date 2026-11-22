@@ -1,7 +1,24 @@
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
+val coinDeskApiKey =
+    localProperties.getProperty(
+        "COINDESK_API_KEY",
+        ""
+    )
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-}
+    id("com.google.devtools.ksp")
+    }
+
 
 android {
     namespace = "com.example.cryptoexchange"
@@ -10,6 +27,12 @@ android {
     }
 
     defaultConfig {
+        buildConfigField(
+            "String",
+            "COINDESK_API_KEY",
+            "\"$coinDeskApiKey\""
+        )
+
         applicationId = "com.example.cryptoexchange"
         minSdk = 24
         targetSdk = 37
@@ -32,6 +55,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -51,4 +75,17 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    val roomVersion = "3.0.3"
+    val coilVersion = "3.6.3"
+
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+
+    implementation("androidx.room3:room3-runtime:$roomVersion")
+    ksp("androidx.room3:room3-compiler:$roomVersion")
+
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+    implementation("io.coil-kt.coil3:coil-compose:$coilVersion")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:$coilVersion")
 }
