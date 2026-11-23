@@ -4,44 +4,28 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.cryptoexchange.presentation.CryptoExchangeRoute
+import com.example.cryptoexchange.presentation.CryptoViewModel
 import com.example.cryptoexchange.ui.theme.CryptoExchangeTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val appContainer = (application as CryptoExchangeApplication).container
+
         setContent {
             CryptoExchangeTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                val vm: CryptoViewModel = viewModel(
+                    factory = CryptoViewModel.Factory(
+                        observeCryptocurrenciesUseCase = appContainer.observeCryptocurrenciesUseCase,
+                        syncManager = appContainer.cryptoSyncManager
                     )
-                }
+                )
+                CryptoExchangeRoute(viewModel = vm)
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    CryptoExchangeTheme {
-        Greeting("Android")
     }
 }

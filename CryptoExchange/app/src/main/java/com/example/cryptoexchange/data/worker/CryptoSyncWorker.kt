@@ -17,6 +17,7 @@ class CryptoSyncWorker(
     companion object {
         const val OUTPUT_MESSAGE = "output_message"
         private const val TAG = "CryptoSyncWorker"
+        private const val MAX_RETRY_ATTEMPTS = 3
     }
 
     override suspend fun doWork(): Result {
@@ -25,12 +26,13 @@ class CryptoSyncWorker(
 
             val application =
                 applicationContext as? CryptoExchangeApplication
-                    ?: return failure("Неправильний Application class")
+                    ?: return failure(
+                        "Неправильний Application class"
+                    )
 
-            val syncUseCase =
-                application.container.syncCryptocurrenciesUseCase
-
-            syncUseCase()
+            application
+                .container
+                .syncCryptocurrenciesUseCase()
 
             Log.d(TAG, "Synchronization successful")
 
@@ -47,33 +49,25 @@ class CryptoSyncWorker(
             Log.d(TAG, "Worker cancelled")
             throw e
 
-        } catch (e: CryptoSyncException.Temporary) {
-            Log.e(TAG, "Temporary error", e)
+        } catch (e: CryptoSyncException) {
+            Log.e(TAG, "Synchronization error", e)
 
-            if (runAttemptCount < 3) {
+            if (
+                e.isRetryable &&
+                runAttemptCount < MAX_RETRY_ATTEMPTS
+            ) {
+                Log.d(
+                    TAG,
+                    "Retry scheduled. Attempt: $runAttemptCount"
+                )
+
                 Result.retry()
             } else {
                 failure(
                     e.message
-                        ?: "Тимчасова помилка синхронізації"
+                        ?: "Помилка синхронізації"
                 )
             }
-
-        } catch (e: CryptoSyncException.RateLimit) {
-            Log.e(TAG, "Rate limit error", e)
-
-            failure(
-                e.message
-                    ?: "Перевищено ліміт API"
-            )
-
-        } catch (e: CryptoSyncException.InvalidResponse) {
-            Log.e(TAG, "Invalid API response", e)
-
-            failure(
-                e.message
-                    ?: "Некоректна відповідь API"
-            )
 
         } catch (e: Exception) {
             Log.e(TAG, "Unexpected error", e)
@@ -85,7 +79,9 @@ class CryptoSyncWorker(
         }
     }
 
-    private fun failure(message: String): Result {
+    private fun failure(
+        message: String
+    ): Result {
         Log.e(TAG, "Worker failed: $message")
 
         return Result.failure(

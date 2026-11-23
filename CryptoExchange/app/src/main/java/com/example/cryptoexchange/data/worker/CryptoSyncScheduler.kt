@@ -16,36 +16,32 @@ class CryptoSyncScheduler(
 ) {
 
     companion object {
-        const val MANUAL_SYNC_WORK_NAME =
-            "crypto_manual_sync"
-
-        const val PERIODIC_SYNC_WORK_NAME =
-            "crypto_periodic_sync"
+        const val MANUAL_SYNC_WORK_NAME = "crypto_manual_sync"
+        const val PERIODIC_SYNC_WORK_NAME = "crypto_periodic_sync"
+        const val MANUAL_SYNC_TAG_PREFIX = "crypto_manual_sync_started_"
     }
 
     private val workManager =
-        WorkManager.getInstance(
-            context.applicationContext
-        )
+        WorkManager.getInstance(context.applicationContext)
 
     private val networkConstraints =
         Constraints.Builder()
-            .setRequiredNetworkType(
-                NetworkType.CONNECTED
-            )
+            .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
-    fun scheduleManualSync() {
+    fun scheduleManualSync(): Long {
+        val startedAtMillis = System.currentTimeMillis()
 
         val request =
             OneTimeWorkRequestBuilder<CryptoSyncWorker>()
-                .setConstraints(
-                    networkConstraints
-                )
+                .setConstraints(networkConstraints)
                 .setBackoffCriteria(
                     BackoffPolicy.EXPONENTIAL,
                     30,
                     TimeUnit.SECONDS
+                )
+                .addTag(
+                    "$MANUAL_SYNC_TAG_PREFIX$startedAtMillis"
                 )
                 .build()
 
@@ -54,18 +50,17 @@ class CryptoSyncScheduler(
             ExistingWorkPolicy.KEEP,
             request
         )
+
+        return startedAtMillis
     }
 
     fun schedulePeriodicSync() {
-
         val request =
             PeriodicWorkRequestBuilder<CryptoSyncWorker>(
                 1,
                 TimeUnit.HOURS
             )
-                .setConstraints(
-                    networkConstraints
-                )
+                .setConstraints(networkConstraints)
                 .setBackoffCriteria(
                     BackoffPolicy.EXPONENTIAL,
                     30,
